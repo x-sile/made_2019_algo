@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 using namespace std;
 
@@ -19,20 +20,18 @@ struct Node {
 
 class Heap {
 public:
-    explicit Heap(const vector<Node> &arr_) : arr(arr_) {}; // IDE пишет что можно std::move (а это затратно по памяти?)
-    void buildHeap(int window_size);
+    void buildHeap(const Node* array, int start, int end);
     void insertElement(Node &node);
-    Node getMax();
+    Node getMax() const;
     void removeMax();
 
 private:
     vector<Node> arr; // начальный массив
-    int size = 0; // количество элементов в куче
     void siftDown(int i);
     void siftUp(int i);
-    int leftChild(int i);
-    int rightChild(int i);
-    int parent(int i);
+    int leftChild(int i) const;
+    int rightChild(int i) const;
+    int parent(int i) const;
 };
 
 
@@ -57,47 +56,50 @@ void Heap::siftUp(int i) {
     }
 }
 
-void Heap::buildHeap(int window_size) {
-    size = window_size;
+void Heap::buildHeap(const Node* array, int start, int end) {
+    int size = end - start;
+    arr.reserve(size);
+    for (int i = start; i < end; i++) {
+        arr.push_back(array[i]);
+    }
     for (int i = size / 2 - 1; i >= 0; i--) {
         siftDown(i);
     }
 }
 
 void Heap::insertElement(Node &node) {
-    arr[size++] = node;
-    siftUp(size - 1);;
+    arr.push_back(node);
+    siftUp(arr.size() - 1);
 }
 
-Node Heap::getMax() {
+Node Heap::getMax() const {
     return arr[0];
 }
 
 void Heap::removeMax() {
     // удаляем максимальный (первый) элемент, просеиваем последний элемент вниз
-    swap(arr[0], arr[size - 1]);
+    swap(arr[0], arr[arr.size() - 1]);
     arr.pop_back();
-    size--;
     siftDown(0);
 }
 
-int Heap::leftChild(int i) {
+int Heap::leftChild(int i) const {
     int left_child = 2 * i + 1;
-    if (left_child < size) {
+    if (left_child < arr.size()) {
         return left_child;
     }
     return -1; // если ребенка нет
 }
 
-int Heap::rightChild(int i) {
+int Heap::rightChild(int i) const {
     int right_child = 2 * i + 2;
-    if (right_child < size) {
+    if (right_child < arr.size()) {
         return right_child;
     }
     return -1; // если ребенка нет
 }
 
-int Heap::parent(int i) {
+int Heap::parent(int i) const {
     int parent = (i - 1) / 2;
     if (i == 0) { // у корня нет родителя
         return -1;
@@ -110,13 +112,12 @@ int main() {
     int n_elements = 0;
     cin >> n_elements;
 
-    vector<Node> array;
-    array.reserve(n_elements);
+    Node* array = new Node[n_elements];
     for (int i = 0; i < n_elements; i++) {
         int value = 0;
         cin >> value;
         Node node{i, value};
-        array.push_back(node); // заполняем вектор
+        array[i] = node; // заполняем вектор
     }
     int window_size = 0;
     cin >> window_size;
@@ -129,8 +130,8 @@ int main() {
         return EXIT_SUCCESS;
     }
 
-    Heap heap{array};
-    heap.buildHeap(window_size);
+    Heap heap;
+    heap.buildHeap(array, 0, window_size);
     cout << heap.getMax().value << " ";
     for (int i = window_size; i < n_elements; i++) {
         heap.insertElement(array[i]);
@@ -142,5 +143,6 @@ int main() {
         }
         cout << max_node.value << " ";
     }
+    delete[] array;
     return EXIT_SUCCESS;
 }

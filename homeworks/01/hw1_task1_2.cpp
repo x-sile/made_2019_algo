@@ -25,7 +25,7 @@ public:
     void pushFront(int value);
     int popBack();
     int popFront();
-    bool isEmpty();
+    bool isEmpty() const;
     ~Deque();
 
 private:
@@ -95,7 +95,7 @@ int Deque::popFront() {
     return buffer[head--];
 }
 
-bool Deque::isEmpty() {
+bool Deque::isEmpty() const{
     return size == 0;
 }
 
